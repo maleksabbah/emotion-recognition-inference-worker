@@ -12,8 +12,8 @@ InferenceTask schema (from orchestrator):
     "frame_number": int,
     "timestamp_ms": float,
     "face_index": int,
-    "track_id": str | null,
-    "face_crop": str,           # base64 JPEG
+    "track_id": int,             # defaults to 0 if missing/null
+    "face_crop": str,            # base64 JPEG
     "region_crops": {
         "eyes": str,
         "mouth": str,
@@ -31,7 +31,7 @@ InferenceResult schema (published to inference_results):
     "frame_number": int,
     "timestamp_ms": float,
     "face_index": int,
-    "track_id": str | null,
+    "track_id": int,             # always int, never null
     "bbox": { "x": 0, "y": 0, "w": 0, "h": 0 },
     "emotions": { "happy": float, "sad": float, ... },
     "top_emotion": str,
@@ -128,7 +128,8 @@ class InferenceWorker:
         frame_number = task.get("frame_number", 0)
         timestamp_ms = task.get("timestamp_ms", 0.0)
         face_index = task.get("face_index", 0)
-        track_id = task.get("track_id")
+        # track_id must be int (orchestrator schema expects int, not None)
+        track_id = task.get("track_id") or 0
 
         start = time.perf_counter()
 
