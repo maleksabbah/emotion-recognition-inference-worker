@@ -4,7 +4,7 @@ Inference Worker configuration — loaded from environment variables.
 import os
 
 # ── Kafka ──────────────────────────────────────────────
-KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "localhost:9092")
+KAFKA_BOOTSTRAP = os.getenv("KAFKA_BOOTSTRAP", "18.175.200.86:9093")
 KAFKA_GROUP_ID = os.getenv("KAFKA_GROUP_ID", "inference-worker-group")
 
 TOPIC_INFERENCE_TASKS = os.getenv("TOPIC_INFERENCE_TASKS", "inference_tasks")
@@ -22,5 +22,5 @@ VALENCE_LABELS = ["negative", "neutral", "positive"]
 AROUSAL_LABELS = ["low", "high"]
 
 # ── Worker ─────────────────────────────────────────────
-WORKER_ID = os.getenv("WORKER_ID", "inference-worker-1")
+WORKER_ID = os.getenv("WORKER_ID", "gpu-worker-1")
 BATCH_SIZE = int(os.getenv("BATCH_SIZE", "1"))
