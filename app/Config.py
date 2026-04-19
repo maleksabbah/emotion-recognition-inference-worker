@@ -22,5 +22,5 @@ VALENCE_LABELS = ["negative", "neutral", "positive"]
 AROUSAL_LABELS = ["low", "high"]
 
 # ── Worker ─────────────────────────────────────────────
-WORKER_ID = os.getenv("WORKER_ID", "gpu-worker-1")
+WORKER_ID = os.getenv("WORKER_ID", "inference-worker-1")
 BATCH_SIZE = int(os.getenv("BATCH_SIZE", "1"))
