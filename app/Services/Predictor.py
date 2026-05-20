@@ -23,7 +23,7 @@ from app.Config import (
     MODEL_PATH, NUM_CLASSES, DEVICE,
     EMOTION_LABELS, INTENSITY_LABELS, VALENCE_LABELS, AROUSAL_LABELS,
 )
-from app.Model import MultiStreamEmotionNet
+from app.Services.Model import MultiStreamEmotionNet
 
 logger = logging.getLogger("inference-worker.predictor")
 
@@ -53,26 +53,24 @@ def _decode_crop(b64: str) -> np.ndarray:
     bgr = cv2.imdecode(arr, cv2.IMREAD_COLOR)
     return cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
 
-
 class Predictor:
     def __init__(self):
-        self.model: Optional[MultiStreamEmotionNet] = None
-        self.device: Optional[torch.device] = None
+        self.model : Optional[MultiStreamEmotionNet] = None
+        self.device : Optional[torch.device] = None
 
     def load(self):
         """Load model weights from checkpoint."""
         # Resolve device
         if DEVICE == "auto":
-            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
         else:
             self.device = torch.device(DEVICE)
-
         logger.info("Loading model from %s on %s", MODEL_PATH, self.device)
 
         self.model = MultiStreamEmotionNet(num_classes=NUM_CLASSES)
 
         try:
-            checkpoint = torch.load(MODEL_PATH, map_location=self.device, weights_only=False)
+            checkpoint = torch.load(MODEL_PATH, map_location=self.device,weights_only=True)
 
             # Handle both raw state_dict and checkpoint dict
             if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
@@ -83,7 +81,6 @@ class Predictor:
             else:
                 self.model.load_state_dict(checkpoint)
                 logger.info("Loaded raw state dict")
-
         except FileNotFoundError:
             logger.warning("No checkpoint at %s — using random weights (dev mode)", MODEL_PATH)
 
@@ -109,24 +106,24 @@ class Predictor:
             "face": face_t,
             "eyes": regions["eyes"],
             "mouth": regions["mouth"],
-            "cheek": regions["cheeks"],     # model param name is "cheek"
+            "cheek": regions["cheeks"],  # model param name is "cheek"
             "forehead": regions["forehead"],
         }
 
-    def _format_head(self, logits: torch.Tensor, labels: list[str]) -> dict[str, Any]:
+    def _format_head(self,logits: torch.Tensor,labels:list[str]) -> dict[str, Any]:
         """Convert logits to label + probabilities."""
         probs = F.softmax(logits, dim=1).squeeze(0).cpu().tolist()
-        top_idx = int(torch.argmax(logits, dim=1).item())
+        top_idx = int(torch.argmax(logits,dim=1).item())
         return {
             "label": labels[top_idx],
-            "confidence": round(probs[top_idx], 4),
+            "confidence": round(probs[top_idx],4),
             "probabilities": {
-                label: round(prob, 4) for label, prob in zip(labels, probs)
+                label: round(prob,4) for label,prob in zip(labels,probs)
             },
-        }
 
+        }
     @torch.no_grad()
-    def predict(self, crops: dict[str, str]) -> dict[str, Any]:
+    def predict(self,crops: dict[str, str]) -> dict[str, Any]:
         """
         Run inference on a set of crops.
         Input: {"face": b64, "eyes": b64, "mouth": b64, "cheeks": b64, "forehead": b64}
@@ -142,11 +139,21 @@ class Predictor:
             tensors["mouth"],
             tensors["cheek"],
             tensors["forehead"],
-        )
 
+        )
         return {
             "emotion": self._format_head(outputs["emotion"], EMOTION_LABELS),
             "intensity": self._format_head(outputs["intensity"], INTENSITY_LABELS),
             "valence": self._format_head(outputs["valence"], VALENCE_LABELS),
             "arousal": self._format_head(outputs["arousal"], AROUSAL_LABELS),
         }
+
+
+
+
+
+
+
+
+
+

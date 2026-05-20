@@ -1,16 +1,17 @@
-# EmotionRecognitionInferenceWorker (CPU-only)
-# Use this if you don't have an NVIDIA GPU.
-# Set INFERENCE_DEVICE=cpu in .env
+# EmotionRecognitionInferenceWorker (CPU)
+# Kafka consumer + Redis live: run PyTorch model on cropped faces
+# Talks to: Kafka, Redis (live)
+# Model mounted at /models/multi_stream_emotion.pt
+# Set DEVICE=cpu (or DEVICE=cuda with GPU image)
 
 FROM python:3.11-slim
 
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
-
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
