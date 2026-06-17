@@ -39,8 +39,8 @@ NUM_CLASSES = int(os.getenv("NUM_CLASSES", "7"))
 INFERENCE_BATCH_SIZE = int(os.getenv("INFERENCE_BATCH_SIZE", "1"))
 
 EMOTION_LABELS = [
-    "angry", "disgust", "fear", "happy", "neutral", "sad", "surprise",
+    "angry", "happy", "sad", "surprise", "neutral", "fear", "disgust",
 ]
 INTENSITY_LABELS = ["low", "medium", "high"]
 VALENCE_LABELS = ["negative", "neutral", "positive"]
-AROUSAL_LABELS = ["low", "medium", "high"]
+AROUSAL_LABELS = ["low", "high"]
