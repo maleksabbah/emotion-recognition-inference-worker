@@ -16,6 +16,8 @@ WORKER_ID = os.getenv("WORKER_ID", f"inference-{uuid.uuid4().hex[:8]}")
 # ─── Kafka ─────────────────────────────────────────────────────────────
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+KAFKA_SASL_USERNAME = os.getenv("KAFKA_SASL_USERNAME", "")
+KAFKA_SASL_PASSWORD = os.getenv("KAFKA_SASL_PASSWORD", "")
 INFERENCE_TASKS_TOPIC = os.getenv("INFERENCE_TASKS_TOPIC", "inference_tasks")
 INFERENCE_RESULTS_TOPIC = os.getenv("INFERENCE_RESULTS_TOPIC", "inference_results")
 INFERENCE_GROUP_ID = os.getenv("INFERENCE_GROUP_ID", "inference-workers")

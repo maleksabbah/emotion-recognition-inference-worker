@@ -57,8 +57,13 @@ REGION_TRANSFORM = transforms.Compose([
 ])
 
 
+_MAX_BASE64_CHARS = 10_000_000
+
+
 def _decode_crop(b64: str) -> Image.Image:
     """Decode base64 JPEG bytes to a PIL RGB image (training-style)."""
+    if len(b64) > _MAX_BASE64_CHARS:
+        raise ValueError(f"base64 crop exceeds {_MAX_BASE64_CHARS} chars ({len(b64)})")
     img_bytes = base64.b64decode(b64)
     return Image.open(io.BytesIO(img_bytes)).convert("RGB")
 

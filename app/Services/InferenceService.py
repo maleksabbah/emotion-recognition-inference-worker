@@ -5,6 +5,8 @@ InferenceTask (with 5 base64 crops) → run model → InferenceResult.
 """
 from __future__ import annotations
 
+import asyncio
+import functools
 import logging
 import time
 
@@ -31,8 +33,11 @@ class InferenceService:
             "forehead": task.region_crops.forehead,
         }
 
-        # Run model — produces 4 heads (emotion, intensity, valence, arousal)
-        output = self.predictor.predict(crops)
+        # Run model in executor to avoid blocking the event loop / Kafka heartbeats
+        loop = asyncio.get_event_loop()
+        output = await loop.run_in_executor(
+            None, functools.partial(self.predictor.predict, crops)
+        )
 
         # Pull emotion probabilities into typed scores
         emo_probs = output["emotion"]["probabilities"]

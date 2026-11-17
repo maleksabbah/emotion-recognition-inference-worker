@@ -13,6 +13,8 @@ from app.Config import (
     INFERENCE_GROUP_ID,
     INFERENCE_TASKS_TOPIC,
     KAFKA_BOOTSTRAP_SERVERS,
+    KAFKA_SASL_USERNAME,
+    KAFKA_SASL_PASSWORD,
 )
 
 logger = logging.getLogger("inference-worker.kafka-consumer")
@@ -23,18 +25,31 @@ class KafkaConsumer:
         self._consumer: AIOKafkaConsumer | None = None
 
     async def start(self) -> None:
-        self._consumer = AIOKafkaConsumer(
-            INFERENCE_TASKS_TOPIC,
-            bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
-            group_id=INFERENCE_GROUP_ID,
-            enable_auto_commit=True,
-            auto_offset_reset="earliest",
-        )
+        kafka_kwargs = {
+            "bootstrap_servers": KAFKA_BOOTSTRAP_SERVERS,
+            "group_id": INFERENCE_GROUP_ID,
+            "enable_auto_commit": False,
+            "auto_offset_reset": "earliest",
+            "session_timeout_ms": 300000,
+            "max_poll_interval_ms": 1800000,
+        }
+        if KAFKA_SASL_USERNAME:
+            kafka_kwargs.update({
+                "security_protocol": "SASL_SSL",
+                "sasl_mechanism": "SCRAM-SHA-256",
+                "sasl_plain_username": KAFKA_SASL_USERNAME,
+                "sasl_plain_password": KAFKA_SASL_PASSWORD,
+            })
+        self._consumer = AIOKafkaConsumer(INFERENCE_TASKS_TOPIC, **kafka_kwargs)
         await self._consumer.start()
 
     async def stop(self) -> None:
         if self._consumer:
             await self._consumer.stop()
+
+    async def commit(self) -> None:
+        if self._consumer:
+            await self._consumer.commit()
 
     async def consume(self) -> AsyncIterator[dict]:
         if not self._consumer:

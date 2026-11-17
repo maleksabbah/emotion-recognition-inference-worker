@@ -41,8 +41,10 @@ async def kafka_loop(
             task = InferenceTask.model_validate(raw)
         except Exception as e:
             logger.error("Bad InferenceTask from Kafka: %s", e)
+            await consumer.commit()
             continue
         await _handle(task, inference, producer)
+        await consumer.commit()
 
 
 async def redis_loop(
@@ -77,6 +79,15 @@ async def _handle(
         result = await inference.process_task(task)
     except Exception as e:
         logger.exception("process_task failed: %s", e)
+        await producer.publish_inference_result({
+            "task_id": task.task_id,
+            "session_id": task.session_id,
+            "frame_number": task.frame_number,
+            "face_index": task.face_index,
+            "status": "failed",
+            "error": str(e),
+            "worker_id": WORKER_ID,
+        })
         return
     if result is None:
         return
