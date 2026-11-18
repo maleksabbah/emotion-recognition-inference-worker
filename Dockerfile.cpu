@@ -1,7 +1,7 @@
 # EmotionRecognitionInferenceWorker (CPU)
 # Kafka consumer + Redis live: run PyTorch model on cropped faces
 # Talks to: Kafka, Redis (live)
-# Model mounted at /models/multi_stream_emotion.pt
+# Model mounted at MODEL_PATH, or downloaded from S3 at startup if MODEL_S3_KEY is set
 # Set DEVICE=cpu (or DEVICE=cuda with GPU image)
 
 FROM python:3.11-slim
@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
 COPY app/ ./app/
 COPY main.py .
